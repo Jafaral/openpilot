@@ -1,10 +1,11 @@
 // CAN msgs we care about
 #define MAZDA_LKAS          0x243
-#define MAZDA_CRZ_CTRL      0x21c
+#define MAZDA_CRZ_CTRL      0x21f
 #define MAZDA_CRZ_BTNS      0x09d
 #define MAZDA_STEER_TORQUE  0x240
 #define MAZDA_ENGINE_DATA   0x202
 #define MAZDA_PEDALS        0x165
+#define MAZDA_CAM_SETTINGS  0x485
 
 // CAN bus numbers
 #define MAZDA_MAIN 0
@@ -27,7 +28,7 @@
 #define MAZDA_LKAS_ENABLE_SPEED  5200
 #define MAZDA_LKAS_DISABLE_SPEED 4500
 
-const CanMsg MAZDA_TX_MSGS[] = {{MAZDA_LKAS, 0, 8}, {MAZDA_CRZ_BTNS, 0, 8}};
+const CanMsg MAZDA_TX_MSGS[] = {{MAZDA_LKAS, 0, 8}, {MAZDA_CRZ_BTNS, 0, 8}, {MAZDA_CAM_SETTINGS, 0, 8}};
 bool mazda_lkas_allowed = true;
 
 AddrCheckStruct mazda_rx_checks[] = {
@@ -70,7 +71,7 @@ static int mazda_rx_hook(CAN_FIFOMailBox_TypeDef *to_push) {
 
     // enter controls on rising edge of ACC, exit controls on ACC off
     if (addr == MAZDA_CRZ_CTRL) {
-      bool cruise_engaged = GET_BYTE(to_push, 0) & 8;
+      bool cruise_engaged = GET_BYTE(to_push, 0) & 0x20;
       if (cruise_engaged) {
         if (!cruise_engaged_prev) {
           // do not engage until we hit the speed at which lkas is on
@@ -173,7 +174,7 @@ static int mazda_fwd_hook(int bus, CAN_FIFOMailBox_TypeDef *to_fwd) {
     if (bus == MAZDA_MAIN) {
       bus_fwd = MAZDA_CAM;
     } else if (bus == MAZDA_CAM) {
-      if (!(addr == MAZDA_LKAS)) {
+      if (!(addr == MAZDA_LKAS || addr == MAZDA_CAM_SETTINGS)) {
         bus_fwd = MAZDA_MAIN;
       }
     } else {

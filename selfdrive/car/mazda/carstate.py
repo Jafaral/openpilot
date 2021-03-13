@@ -72,7 +72,7 @@ class CarState(CarStateBase):
       self.cruise_speed = ret.vEgoRaw
 
     ret.cruiseState.available = True
-    ret.cruiseState.enabled = cp.vl["CRZ_CTRL"]['CRZ_ACTIVE'] == 1
+    ret.cruiseState.enabled = cp.vl["CRZ_EVENTS"]['NONACC_ACTIVE'] == 1
     ret.cruiseState.speed = self.cruise_speed
 
     if ret.cruiseState.enabled:
@@ -89,7 +89,7 @@ class CarState(CarStateBase):
     ret.steerWarning = cp.vl["STEER_RATE"]['HANDS_OFF_5_SECONDS'] == 1
 
     self.acc_active_last = ret.cruiseState.enabled
-
+    self.cam_settings = cp_cam.vl["CAM_SETTINGS"]
     self.cam_lkas = cp_cam.vl["CAM_LKAS"]
     ret.steerError = cp_cam.vl["CAM_LKAS"]['ERR_BIT_1'] == 1
 
@@ -126,7 +126,7 @@ class CarState(CarStateBase):
         ("LKAS_BLOCK", "STEER_RATE", 0),
         ("LKAS_TRACK_STATE", "STEER_RATE", 0),
         ("HANDS_OFF_5_SECONDS", "STEER_RATE", 0),
-        ("CRZ_ACTIVE", "CRZ_CTRL", 0),
+        ("NONACC_ACTIVE", "CRZ_EVENTS", 0),
         ("STANDSTILL", "PEDALS", 0),
         ("BRAKE_ON", "PEDALS", 0),
         ("BRAKE_PRESSURE", "BRAKE", 0),
@@ -148,7 +148,7 @@ class CarState(CarStateBase):
 
       checks += [
         ("ENGINE_DATA", 100),
-        ("CRZ_CTRL", 50),
+        ("CRZ_EVENTS", 50),
         ("CRZ_BTNS", 10),
         ("PEDALS", 50),
         ("BRAKE", 50),
@@ -178,11 +178,23 @@ class CarState(CarStateBase):
         ("STEERING_ANGLE",   "CAM_LKAS", 0),
         ("ANGLE_ENABLED",    "CAM_LKAS", 0),
         ("CHKSUM",           "CAM_LKAS", 0),
+        ("LKAS_SENSETIVITY",      "CAM_SETTINGS", 1),
+        ("WARNING",               "CAM_SETTINGS", 0),
+        ("NEW_SIGNAL_1",          "CAM_SETTINGS", 0),
+        ("LKAS_ASSIT_TIMING",     "CAM_SETTINGS", 0),
+        ("NEW_SIGNAL_2",          "CAM_SETTINGS", 0),
+        ("LKAS_INERVENTION_ON1",  "CAM_SETTINGS", 1),
+        ("LANEE_DEPARTURE_ALERT", "CAM_SETTINGS", 2),
+        ("ILKAS_NTERVENTION_ON2", "CAM_SETTINGS", 1),
+        ("SBS_WARNING_DISTANCE",  "CAM_SETTINGS", 2),
+        ("SBS_SCBC",              "CAM_SETTINGS", 2),
       ]
 
       checks += [
         # sig_address, frequency
         ("CAM_LKAS",      16),
+        ("CAM_SETTINGS", 10),
       ]
 
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, checks, 2)
+

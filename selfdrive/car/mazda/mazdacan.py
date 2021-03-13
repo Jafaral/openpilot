@@ -13,8 +13,8 @@ def create_steering_control(packer, car_fingerprint, frame, apply_steer, lkas):
   lnv = 0
   er2 = int(lkas["ERR_BIT_2"])
 
-  steering_angle = int(lkas["STEERING_ANGLE"])
-  b2 = int(lkas["ANGLE_ENABLED"])
+  steering_angle = 0
+  b2 = 0
 
   tmp = steering_angle + 2048
   ahi = tmp >> 10
@@ -55,6 +55,21 @@ def create_steering_control(packer, car_fingerprint, frame, apply_steer, lkas):
     }
 
   return packer.make_can_msg("CAM_LKAS", 0, values)
+
+def create_cam_settings(packer, car_fingerprint, st):
+  values = {
+    "LKAS_SENSETIVITY"      : int(st["LKAS_SENSETIVITY"]),
+    "WARNING"               : int(st["WARNING"]),
+    "NEW_SIGNAL_1"          : int(st["NEW_SIGNAL_1"]),
+    "LKAS_ASSIT_TIMING"     : int(st["LKAS_ASSIT_TIMING"]),
+    "NEW_SIGNAL_2"          : int(st["NEW_SIGNAL_2"]),
+    "LKAS_INERVENTION_ON1"  : 1,
+    "LANEE_DEPARTURE_ALERT" : int(st["LANEE_DEPARTURE_ALERT"]),
+    "ILKAS_NTERVENTION_ON2" : 1,
+    "SBS_WARNING_DISTANCE"  : int(st["SBS_WARNING_DISTANCE"]),
+    "SBS_SCBC"              : int(st["SBS_SCBC"])
+  }
+  return packer.make_can_msg("CAM_SETTINGS", 0, values)
 
 
 def create_button_cmd(packer, car_fingerprint, button):
